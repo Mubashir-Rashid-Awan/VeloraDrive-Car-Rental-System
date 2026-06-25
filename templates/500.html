@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}500 – Server Error – VeloraDrive{% endblock %}
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center min-vh-100 text-center px-3">
+  
+    <div class="display-1 fw-bold text-danger">500</div>
+    <h2 class="fw-bold text-white mt-3">Server Error</h2>
+    <p class="text-white mt-2 mb-4">Something went wrong on our end. Please try again later.</p>
+    {% if error %}
+    <code class="text-danger small d-block mb-4">{{ error }}</code>
+    {% endif %}
+    <a href="{{ url_for('main.index') }}" class="btn btn-accent btn-lg rounded-pill px-5">
+        <i class="fas fa-house me-2"></i>Go Home
+    </a>
+
+</div>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% block title %}Browse Cars – VeloraDrive{% endblock %}
+
+{% block content %}
+<div style="padding-top:80px"></div>
+
+<!-- Page Header -->
+<section class="page-header">
+  <div class="container">
+    <h1 class="fw-bold text-white">Our <span class="text-accent">Fleet</span></h1>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-accent">Home</a></li>
+        <li class="breadcrumb-item active text-white">Cars</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<section class="section-padding">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- SIDEBAR FILTERS -->
+      <div class="col-lg-3">
+        <div class="filter-sidebar sticky-top" style="top:100px">
+          <h5 class="fw-bold text-white mb-4"><i class="fas fa-sliders me-2 text-accent"></i>Filter Cars</h5>
+          <form method="GET" action="{{ url_for('cars.cars_list') }}" id="filterForm">
+
+            <div class="mb-4">
+              <label class="filter-label">Search</label>
+              <div class="input-group">
+                <span class="input-group-text bg-transparent border-secondary"><i class="fas fa-search text-white"></i></span>
+                <input type="text" name="search" class="form-control bg-dark-3 border-secondary text-white" placeholder="Car name or brand..." value="{{ search }}">
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="filter-label">Category</label>
+              <select name="category" class="form-select bg-dark-3 border-secondary text-white">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat.category_name }}" {% if selected_category == cat.category_name %}selected{% endif %}>
+                  {{ cat.category_name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="filter-label">Price Range ($/day)</label>
+              <div class="row g-2">
+                <div class="col-6">
+                  <input type="number" name="min_price" class="form-control bg-dark-3 border-secondary text-white" placeholder="Min" value="{{ min_price }}" min="0">
+                </div>
+                <div class="col-6">
+                  <input type="number" name="max_price" class="form-control bg-dark-3 border-secondary text-white" placeholder="Max" value="{{ max_price }}" min="0">
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="filter-label">Fuel Type</label>
+              <select name="fuel" class="form-select bg-dark-3 border-secondary text-white">
+                <option value="">Any</option>
+                <option value="Petrol" {% if fuel == 'Petrol' %}selected{% endif %}>Petrol</option>
+                <option value="Diesel" {% if fuel == 'Diesel' %}selected{% endif %}>Diesel</option>
+                <option value="Electric" {% if fuel == 'Electric' %}selected{% endif %}>Electric</option>
+                <option value="Hybrid" {% if fuel == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="filter-label">Transmission</label>
+              <select name="transmission" class="form-select bg-dark-3 border-secondary text-white">
+                <option value="">Any</option>
+                <option value="Automatic" {% if transmission == 'Automatic' %}selected{% endif %}>Automatic</option>
+                <option value="Manual" {% if transmission == 'Manual' %}selected{% endif %}>Manual</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="filter-label">Sort By</label>
+              <select name="sort" class="form-select bg-dark-3 border-secondary text-white">
+                <option value="">Latest</option>
+                <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-accent w-100 mb-2">
+              <i class="fas fa-filter me-2"></i>Apply Filters
+            </button>
+            <a href="{{ url_for('cars.cars_list') }}" class="btn btn-outline-secondary w-100 btn-sm">
+              <i class="fas fa-rotate-left me-2"></i>Clear Filters
+            </a>
+          </form>
+        </div>
+      </div>
+
+      <!-- CARS GRID -->
+      <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <span class="text-white">
+            <strong class="text-white">{{ cars|length }}</strong> car{{ 's' if cars|length != 1 else '' }} found
+            {% if selected_category %} in <span class="text-accent">{{ selected_category }}</span>{% endif %}
+          </span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary active" id="gridViewBtn" title="Grid view">
+              <i class="fas fa-th-large"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="listViewBtn" title="List view">
+              <i class="fas fa-list"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="row g-4" id="carsGrid">
+          {% if cars %}
+            {% for car in cars %}
+            <div class="col-lg-4 col-md-6 car-grid-item">
+              <div class="car-card h-100">
+                <div class="car-card-img-wrap">
+                  <img src="{{ car.car_image }}" alt="{{ car.car_name }}" class="car-card-img" loading="lazy">
+                  <span class="car-badge {% if car.availability_status == 'Available' %}bg-success{% elif car.availability_status == 'Rented' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                    {{ car.availability_status }}
+                  </span>
+                  {% if car.category_name %}
+                  <span class="car-cat-badge">{{ car.category_name }}</span>
+                  {% endif %}
+                </div>
+                <div class="car-card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="car-name mb-0">{{ car.car_name }}</h5>
+                    <div class="car-price">${{ "%.0f"|format(car.price_per_day) }}<span class="small text-white fw-normal">/day</span></div>
+                  </div>
+                  <p class="text-white small mb-2">{{ car.brand }} &bull; {{ car.model_year or '' }}</p>
+                  <div class="car-meta d-flex flex-wrap gap-2 mb-3">
+                    <span class="car-meta-item"><i class="fas fa-gas-pump"></i>{{ car.fuel_type or '–' }}</span>
+                    <span class="car-meta-item"><i class="fas fa-gears"></i>{{ car.transmission or '–' }}</span>
+                    <span class="car-meta-item"><i class="fas fa-user-group"></i>{{ car.seating_capacity or '–' }}</span>
+                  </div>
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="stars me-2">
+                      {% set rating = car.avg_rating|round(0)|int %}
+                      {% for i in range(1, 6) %}
+                        <i class="fas fa-star {% if i <= rating %}text-warning{% else %}text-white{% endif %} small"></i>
+                      {% endfor %}
+                    </div>
+                    <span class="text-white small">({{ car.review_count }})</span>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <a href="{{ url_for('cars.car_detail', car_id=car.car_id) }}" class="btn btn-outline-accent btn-sm flex-fill">
+                      <i class="fas fa-eye me-1"></i>Details
+                    </a>
+                    {% if car.availability_status == 'Available' %}
+                      <a href="{{ url_for('booking.book_car', car_id=car.car_id) }}" class="btn btn-accent btn-sm flex-fill">
+                        <i class="fas fa-calendar-check me-1"></i>Book
+                      </a>
+                    {% else %}
+                      <button class="btn btn-secondary btn-sm flex-fill" disabled>Unavailable</button>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="col-12 text-center py-5">
+              <i class="fas fa-car-burst fs-1 text-white mb-3 d-block"></i>
+              <h5 class="text-white">No cars match your filters.</h5>
+              <a href="{{ url_for('cars.cars_list') }}" class="btn btn-accent mt-3">Clear Filters</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('gridViewBtn').addEventListener('click', function() {
+  document.querySelectorAll('.car-grid-item').forEach(el => {
+    el.className = 'col-lg-4 col-md-6 car-grid-item';
+  });
+  this.classList.add('active');
+  document.getElementById('listViewBtn').classList.remove('active');
+});
+document.getElementById('listViewBtn').addEventListener('click', function() {
+  document.querySelectorAll('.car-grid-item').forEach(el => {
+    el.className = 'col-12 car-grid-item';
+  });
+  this.classList.add('active');
+  document.getElementById('gridViewBtn').classList.remove('active');
+});
+</script>
+{% endblock %}

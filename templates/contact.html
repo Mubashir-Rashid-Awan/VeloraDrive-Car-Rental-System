@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}Contact Us – VeloraDrive{% endblock %}
+
+{% block content %}
+<div style="padding-top:80px"></div>
+
+<section class="page-header">
+  <div class="container">
+    <h1 class="fw-bold text-white">Get In <span class="text-accent">Touch</span></h1>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-accent">Home</a></li>
+        <li class="breadcrumb-item active text-white">Contact</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<section class="section-padding">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-5">
+        <span class="section-tag">Contact Us</span>
+        <h2 class="section-title mt-2">We'd Love To <span class="text-accent">Hear From You</span></h2>
+        <p class="text-white mt-3 mb-4">Have a question about booking, fleet availability, pricing, or partnerships? Reach out — our team is available 24/7.</p>
+        <div class="d-flex flex-column gap-4">
+          <div class="d-flex align-items-start gap-3">
+            <div class="feature-icon flex-shrink-0" style="width:48px;height:48px;font-size:18px"><i class="fas fa-location-dot"></i></div>
+            <div>
+              <h6 class="fw-semibold text-white mb-1">Office Address</h6>
+              <p class="text-white small mb-0">123 Drive Street, Motor City, MC 10001</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-start gap-3">
+            <div class="feature-icon flex-shrink-0" style="width:48px;height:48px;font-size:18px"><i class="fas fa-phone"></i></div>
+            <div>
+              <h6 class="fw-semibold text-white mb-1">Phone</h6>
+              <p class="text-white small mb-0">+1 (555) 000-1234<br>Mon – Sun, 8am – 10pm</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-start gap-3">
+            <div class="feature-icon flex-shrink-0" style="width:48px;height:48px;font-size:18px"><i class="fas fa-envelope"></i></div>
+            <div>
+              <h6 class="fw-semibold text-white mb-1">Email</h6>
+              <p class="text-white small mb-0">hello@veloradrive.com<br>Typically replies within 1 hour</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="booking-panel">
+          <h4 class="fw-bold text-white mb-4">Send Us a Message</h4>
+          <form id="contactForm" novalidate>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label text-white small">Your Name</label>
+                <input type="text" class="form-control bg-dark-3 border-secondary text-white" placeholder="John Doe" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label text-white small">Email Address</label>
+                <input type="email" class="form-control bg-dark-3 border-secondary text-white" placeholder="you@example.com" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label text-white small">Phone Number</label>
+                <input type="tel" class="form-control bg-dark-3 border-secondary text-white" placeholder="+1 555 000 1234">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label text-white small">Subject</label>
+                <select class="form-select bg-dark-3 border-secondary text-white">
+                  <option>General Inquiry</option>
+                  <option>Booking Support</option>
+                  <option>Fleet Availability</option>
+                  <option>Partnership</option>
+                  <option>Complaint</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label text-white small">Message</label>
+                <textarea class="form-control bg-dark-3 border-secondary text-white" rows="5" placeholder="Tell us how we can help..." required></textarea>
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-accent btn-lg px-5 rounded-pill">
+                  <i class="fas fa-paper-plane me-2"></i>Send Message
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const btn = this.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-check me-2"></i>Message Sent!';
+  btn.classList.remove('btn-accent');
+  btn.classList.add('btn-success');
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Send Message';
+    btn.classList.add('btn-accent');
+    btn.classList.remove('btn-success');
+    this.reset();
+  }, 3000);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,73 @@
+<div class="row g-3">
+
+    <div class="col-md-6">
+      <label class="form-label text-white small">Car Name *</label>
+      <input type="text" name="car_name" class="form-control bg-dark-3 border-secondary text-white" required placeholder="e.g. BMW X5">
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label text-white small">Brand</label>
+      <input type="text" name="brand" class="form-control bg-dark-3 border-secondary text-white" placeholder="e.g. BMW">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label text-white small">Category</label>
+      <select name="category_id" class="form-select bg-dark-3 border-secondary text-white">
+        <option value="">-- Select --</option>
+        {% for cat in categories %}
+        <option value="{{ cat.category_id }}">{{ cat.category_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label text-white small">Model Year</label>
+      <input type="number" name="model_year" class="form-control bg-dark-3 border-secondary text-white" placeholder="2023" min="2000" max="2030">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label text-white small">Price Per Day ($) *</label>
+      <input type="number" name="price_per_day" class="form-control bg-dark-3 border-secondary text-white" required min="1" step="0.01" placeholder="100.00">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label text-white small">Fuel Type</label>
+      <select name="fuel_type" class="form-select bg-dark-3 border-secondary text-white">
+        <option value="">-- Select --</option>
+        <option>Petrol</option><option>Diesel</option><option>Electric</option><option>Hybrid</option>
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label text-white small">Transmission</label>
+      <select name="transmission" class="form-select bg-dark-3 border-secondary text-white">
+        <option value="">-- Select --</option>
+        <option>Automatic</option><option>Manual</option>
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label text-white small">Seating Capacity</label>
+      <input type="number" name="seating_capacity" class="form-control bg-dark-3 border-secondary text-white" placeholder="5" min="1" max="12">
+    </div>
+
+    <div class="col-12">
+      <label class="form-label text-white small">Car Image URL</label>
+      <input type="url" name="car_image" class="form-control bg-dark-3 border-secondary text-white" placeholder="https://...">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label text-white small">Availability Status</label>
+      <select name="availability_status" class="form-select bg-dark-3 border-secondary text-white">
+        <option value="Available">Available</option>
+        <option value="Rented">Rented</option>
+        <option value="Maintenance">Maintenance</option>
+      </select>
+    </div>
+
+    <div class="col-12">
+      <label class="form-label text-white small">Description</label>
+      <textarea name="description" class="form-control bg-dark-3 border-secondary text-white" rows="2" placeholder="Brief description..."></textarea>
+    </div>
+    
+</div>

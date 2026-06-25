@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}VeloraDrive – Premium Car Rental{% endblock %}</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">
+      <i class="fas fa-car-side me-2 text-accent"></i>Velora<span class="text-accent">Drive</span>
+    </a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('cars.cars_list') }}">Cars</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.about') }}">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.contact') }}">Contact</a></li>
+      </ul>
+      <div class="d-flex align-items-center gap-2">
+        {% if session.get('admin_id') %}
+          <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-outline-accent">
+            <i class="fas fa-shield-halved me-1"></i>Admin Panel
+          </a>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-danger">Logout</a>
+        {% elif session.get('user_id') %}
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="fas fa-user-circle me-1"></i>{{ session.get('user_name', 'User') }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+              <li><a class="dropdown-item" href="{{ url_for('booking.dashboard') }}"><i class="fas fa-gauge me-2"></i>Dashboard</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('booking.my_bookings') }}"><i class="fas fa-calendar-check me-2"></i>My Bookings</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('booking.profile') }}"><i class="fas fa-user-pen me-2"></i>Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fas fa-right-from-bracket me-2"></i>Logout</a></li>
+            </ul>
+          </div>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-light">Login</a>
+          <a href="{{ url_for('auth.signup') }}" class="btn btn-sm btn-accent">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+<!-- END NAVBAR -->
+
+<!-- Flash Messages -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;margin-top:70px">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="toast align-items-center text-white bg-{{ 'success' if category=='success' else 'danger' if category=='danger' else 'warning text-dark' if category=='warning' else 'info' }} border-0 show" role="alert">
+      <div class="d-flex">
+        <div class="toast-body fw-semibold">{{ message }}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+<!-- Page Content -->
+{% block content %}{% endblock %}
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer-dark pt-5 pb-3 mt-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <h5 class="fw-bold mb-3"><i class="fas fa-car-side me-2 text-accent"></i>Velora<span class="text-accent">Drive</span></h5>
+        <p class="text-white small">Premium car rental service delivering luxury, reliability, and unforgettable experiences since 2019. Drive your dream car today.</p>
+        <div class="d-flex gap-3 mt-3">
+          <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div class="col-lg-2 col-sm-6">
+        <h6 class="fw-semibold text-white mb-3">Quick Links</h6>
+        <ul class="list-unstyled small">
+          <li class="mb-2"><a href="{{ url_for('main.index') }}" class="footer-link">Home</a></li>
+          <li class="mb-2"><a href="{{ url_for('cars.cars_list') }}" class="footer-link">Browse Cars</a></li>
+          <li class="mb-2"><a href="{{ url_for('main.about') }}" class="footer-link">About Us</a></li>
+          <li class="mb-2"><a href="{{ url_for('main.contact') }}" class="footer-link">Contact</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3 col-sm-6">
+        <h6 class="fw-semibold text-white mb-3">Car Categories</h6>
+        <ul class="list-unstyled small">
+          <li class="mb-2"><a href="{{ url_for('cars.cars_list', category='SUV') }}" class="footer-link">SUV</a></li>
+          <li class="mb-2"><a href="{{ url_for('cars.cars_list', category='Sedan') }}" class="footer-link">Sedan</a></li>
+          <li class="mb-2"><a href="{{ url_for('cars.cars_list', category='Luxury') }}" class="footer-link">Luxury</a></li>
+          <li class="mb-2"><a href="{{ url_for('cars.cars_list', category='Sports') }}" class="footer-link">Sports</a></li>
+          <li class="mb-2"><a href="{{ url_for('cars.cars_list', category='Electric') }}" class="footer-link">Electric</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3">
+        <h6 class="fw-semibold text-white mb-3">Contact Us</h6>
+        <ul class="list-unstyled small text-white">
+          <li class="mb-2"><i class="fas fa-location-dot me-2 text-accent"></i>123 Drive Street, Motor City</li>
+          <li class="mb-2"><i class="fas fa-phone me-2 text-accent"></i>+1 (555) 000-1234</li>
+          <li class="mb-2"><i class="fas fa-envelope me-2 text-accent"></i>hello@veloradrive.com</li>
+          <li class="mb-2"><i class="fas fa-clock me-2 text-accent"></i>24/7 Support</li>
+        </ul>
+      </div>
+    </div>
+    <hr class="border-secondary mt-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center">
+      <p class="text-white small mb-0">&copy; 2024 VeloraDrive. All rights reserved.</p>
+      <p class="text-white small mb-0">Built with <i class="fas fa-heart text-danger mx-1"></i> using Flask &amp; Bootstrap</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Scroll to top -->
+<button id="scrollTopBtn" class="btn btn-accent btn-sm rounded-circle shadow" title="Back to top">
+  <i class="fas fa-chevron-up"></i>
+</button>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="d-none">
+  <div class="spinner-border text-accent" role="status"></div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Payment – VeloraDrive{% endblock %}
+
+{% block content %}
+<div style="padding-top:80px"></div>
+
+<section class="section-padding">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="booking-panel">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="step-icon bg-accent rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px">
+              <i class="fas fa-credit-card text-white fs-5"></i>
+            </div>
+            <div>
+              <h3 class="fw-bold text-white mb-0">Secure Payment</h3>
+              <p class="text-white mb-0 small">Booking #{{ booking.booking_id }}</p>
+            </div>
+          </div>
+
+          <!-- Booking Details Summary -->
+          <div class="row g-3 mb-4 p-3 rounded-3 bg-dark-3">
+            <div class="col-md-6">
+              <img src="{{ booking.car_image }}" alt="{{ booking.car_name }}" class="img-fluid rounded-3" style="max-height:140px;width:100%;object-fit:cover;">
+            </div>
+            <div class="col-md-6 d-flex flex-column justify-content-center">
+              <h5 class="fw-bold text-white">{{ booking.car_name }}</h5>
+              <p class="text-white small mb-1"><i class="fas fa-location-dot me-1 text-accent"></i>Pickup: {{ booking.pickup_location }}</p>
+              <p class="text-white small mb-1"><i class="fas fa-location-arrow me-1 text-accent"></i>Return: {{ booking.return_location }}</p>
+              <p class="text-white small mb-1"><i class="fas fa-calendar me-1 text-accent"></i>{{ booking.pickup_date.strftime('%b %d') if booking.pickup_date else '' }} → {{ booking.return_date.strftime('%b %d, %Y') if booking.return_date else '' }}</p>
+              <p class="text-white small mb-0"><i class="fas fa-clock me-1 text-accent"></i>{{ booking.total_days }} day{{ 's' if booking.total_days != 1 else '' }}</p>
+            </div>
+          </div>
+
+          <form method="POST">
+            <div class="mb-4">
+              <label class="form-label text-white small fw-semibold">Payment Method</label>
+              <div class="row g-3">
+                {% for method, icon in [('Credit Card','fa-credit-card'), ('Debit Card','fa-money-check'), ('Cash','fa-money-bill-wave')] %}
+                <div class="col-md-4">
+                  <label class="payment-method-card">
+                    <input type="radio" name="payment_method" value="{{ method }}" class="d-none" {% if loop.first %}checked{% endif %}>
+                    <div class="pm-inner text-center p-3">
+                      <i class="fas {{ icon }} fs-2 text-accent mb-2 d-block"></i>
+                      <span class="small fw-semibold text-white">{{ method }}</span>
+                    </div>
+                  </label>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Fake card fields (display only) -->
+            <div id="cardFields" class="mb-4">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label text-white small">Card Number</label>
+                  <input type="text" class="form-control bg-dark-3 border-secondary text-white" placeholder="1234 5678 9012 3456" maxlength="19" id="cardNumber">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-white small">Expiry Date</label>
+                  <input type="text" class="form-control bg-dark-3 border-secondary text-white" placeholder="MM/YY" maxlength="5">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-white small">CVV</label>
+                  <input type="text" class="form-control bg-dark-3 border-secondary text-white" placeholder="•••" maxlength="3">
+                </div>
+                <div class="col-12">
+                  <label class="form-label text-white small">Cardholder Name</label>
+                  <input type="text" class="form-control bg-dark-3 border-secondary text-white" placeholder="John Doe">
+                </div>
+              </div>
+            </div>
+
+            <!-- Amount -->
+            <div class="d-flex justify-content-between align-items-center p-4 rounded-3 bg-dark-3 mb-4">
+              <div>
+                <div class="text-white small">Total Amount Due</div>
+                <div class="display-6 fw-bold text-accent">${{ "%.2f"|format(booking.total_amount) }}</div>
+              </div>
+              <div class="text-end">
+                <div class="small text-white">{{ booking.total_days }} day{{ 's' if booking.total_days != 1 else '' }}</div>
+                <div class="small text-white">${{ "%.2f"|format(booking.price_per_day) }}/day</div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-3">
+              <a href="{{ url_for('cars.cars_list') }}" class="btn btn-outline-secondary flex-fill">Cancel</a>
+              <button type="submit" class="btn btn-accent flex-fill fw-semibold btn-lg">
+                <i class="fas fa-lock me-2"></i>Pay ${{ "%.2f"|format(booking.total_amount) }}
+              </button>
+            </div>
+            <p class="text-white small text-center mt-3"><i class="fas fa-shield-check text-success me-1"></i>This is a simulated payment. No real charges are made.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Format card number with spaces
+const cardInput = document.getElementById('cardNumber');
+if (cardInput) {
+  cardInput.addEventListener('input', function() {
+    let val = this.value.replace(/\D/g, '').substring(0, 16);
+    this.value = val.replace(/(.{4})/g, '$1 ').trim();
+  });
+}
+// Toggle card fields based on payment method
+document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    const showCard = this.value !== 'Cash';
+    document.getElementById('cardFields').style.display = showCard ? 'block' : 'none';
+    document.querySelectorAll('.pm-inner').forEach(el => el.classList.remove('selected'));
+    this.closest('.payment-method-card').querySelector('.pm-inner').classList.add('selected');
+  });
+});
+// Init first selected
+document.querySelector('input[name="payment_method"]:checked')?.closest('.payment-method-card')?.querySelector('.pm-inner')?.classList.add('selected');
+</script>
+{% endblock %}

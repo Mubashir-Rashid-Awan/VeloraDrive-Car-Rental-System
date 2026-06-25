@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard – VeloraDrive{% endblock %}
+
+{% block content %}
+<div style="padding-top:80px"></div>
+
+<section class="section-padding">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- Sidebar -->
+      <div class="col-lg-3">
+        <div class="dash-sidebar">
+          <div class="dash-user-info text-center mb-4">
+            <div class="dash-avatar mb-3">
+              <i class="fas fa-user-circle text-accent" style="font-size:64px"></i>
+            </div>
+            <h5 class="fw-bold text-white mb-0">{{ session.get('user_name', 'User') }}</h5>
+            <small class="text-white">Member</small>
+          </div>
+          <nav class="dash-nav">
+            <a href="{{ url_for('booking.my_bookings') }}" class="dash-nav-link {% if active_tab == 'bookings' %}active{% endif %}">
+              <i class="fas fa-calendar-check"></i>My Bookings
+            </a>
+            <a href="{{ url_for('booking.profile') }}" class="dash-nav-link {% if active_tab == 'profile' %}active{% endif %}">
+              <i class="fas fa-user-pen"></i>Edit Profile
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="dash-nav-link text-danger">
+              <i class="fas fa-right-from-bracket"></i>Logout
+            </a>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="col-lg-9">
+
+        {% if active_tab == 'bookings' %}
+        <h3 class="fw-bold text-white mb-4"><i class="fas fa-calendar-check text-accent me-2"></i>My Bookings</h3>
+
+        {% if bookings %}
+        <!-- Stats Row -->
+        <div class="row g-3 mb-4">
+          {% set paid_bookings = bookings | selectattr('payment_status', 'equalto', 'Paid') | list %}
+          {% set total_spent = paid_bookings | sum(attribute='total_amount') %}
+          <div class="col-sm-4">
+            <div class="dash-stat-card">
+              <div class="dash-stat-icon"><i class="fas fa-calendar"></i></div>
+              <div class="dash-stat-val">{{ bookings|length }}</div>
+              <div class="dash-stat-label">Total Bookings</div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="dash-stat-card">
+              <div class="dash-stat-icon"><i class="fas fa-check-circle"></i></div>
+              <div class="dash-stat-val">{{ bookings | selectattr('booking_status', 'equalto', 'Confirmed') | list | length }}</div>
+              <div class="dash-stat-label">Confirmed</div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="dash-stat-card">
+              <div class="dash-stat-icon"><i class="fas fa-dollar-sign"></i></div>
+              <div class="dash-stat-val">${{ "%.0f"|format(total_spent) }}</div>
+              <div class="dash-stat-label">Total Spent</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-dark table-hover align-middle">
+            <thead>
+              <tr class="text-white small">
+                <th>#</th><th>Car</th><th>Dates</th><th>Days</th><th>Amount</th><th>Payment</th><th>Status</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in bookings %}
+              <tr>
+                <td class="text-white">{{ b.booking_id }}</td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <img src="{{ b.car_image }}" alt="" style="width:48px;height:36px;object-fit:cover;border-radius:6px">
+                    <div>
+                      <div class="fw-semibold text-white small">{{ b.car_name }}</div>
+                      <div class="text-white" style="font-size:11px">{{ b.brand }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="small text-white">
+                  {{ b.pickup_date.strftime('%b %d') if b.pickup_date else '' }} →
+                  {{ b.return_date.strftime('%b %d, %Y') if b.return_date else '' }}
+                </td>
+                <td class="text-white">{{ b.total_days }}</td>
+                <td class="text-accent fw-semibold">${{ "%.2f"|format(b.total_amount) }}</td>
+                <td>
+                  <span class="badge {% if b.payment_status == 'Paid' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                    {{ b.payment_status or 'Unpaid' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge {% if b.booking_status=='Confirmed' %}bg-success{% elif b.booking_status=='Cancelled' %}bg-danger{% elif b.booking_status=='Completed' %}bg-info{% else %}bg-warning text-dark{% endif %}">
+                    {{ b.booking_status }}
+                  </span>
+                </td>
+                <td>
+                  {% if b.payment_status == 'Paid' or b.booking_status in ('Confirmed','Completed') %}
+                  <a href="{{ url_for('booking.invoice', booking_id=b.booking_id) }}" class="btn btn-outline-accent btn-sm" title="Invoice">
+                    <i class="fas fa-file-invoice"></i>
+                  </a>
+                  {% elif b.booking_status == 'Pending' %}
+                  <a href="{{ url_for('booking.payment', booking_id=b.booking_id) }}" class="btn btn-accent btn-sm">Pay</a>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-calendar-xmark fs-1 text-white mb-3 d-block"></i>
+            <h5 class="text-white">No bookings yet.</h5>
+            <a href="{{ url_for('cars.cars_list') }}" class="btn btn-accent mt-3">Browse Cars</a>
+          </div>
+        {% endif %}
+
+        {% elif active_tab == 'profile' %}
+        <h3 class="fw-bold text-white mb-4"><i class="fas fa-user-pen text-accent me-2"></i>Edit Profile</h3>
+        <div class="booking-panel" style="max-width:600px">
+          <form method="POST" action="{{ url_for('booking.profile') }}" novalidate>
+            <div class="mb-3">
+              <label class="form-label text-white small">Full Name</label>
+              <input type="text" name="full_name" class="form-control bg-dark-3 border-secondary text-white"
+                     value="{{ user.full_name if user else session.get('user_name','') }}" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-white small">Email Address</label>
+              <input type="email" class="form-control bg-dark-3 border-secondary text-white"
+                     value="{{ user.email if user else '' }}" disabled>
+              <div class="form-text text-white">Email cannot be changed.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-white small">Phone Number</label>
+              <input type="tel" name="phone" class="form-control bg-dark-3 border-secondary text-white"
+                     value="{{ user.phone if user else '' }}">
+            </div>
+            <div class="mb-4">
+              <label class="form-label text-white small">Profile Image URL</label>
+              <input type="url" name="profile_image" class="form-control bg-dark-3 border-secondary text-white"
+                     value="{{ user.profile_image if user and user.profile_image != 'default.jpg' else '' }}"
+                     placeholder="https://...">
+            </div>
+            <button type="submit" class="btn btn-accent px-5">
+              <i class="fas fa-floppy-disk me-2"></i>Save Changes
+            </button>
+          </form>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

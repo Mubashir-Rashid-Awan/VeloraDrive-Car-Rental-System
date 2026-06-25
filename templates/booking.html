@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Book {{ car.car_name }} – VeloraDrive{% endblock %}
+
+{% block content %}
+<div style="padding-top:80px"></div>
+
+<section class="section-padding">
+  <div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-accent">Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('cars.cars_list') }}" class="text-accent">Cars</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('cars.car_detail', car_id=car.car_id) }}" class="text-accent">{{ car.car_name }}</a></li>
+        <li class="breadcrumb-item active text-white">Book</li>
+      </ol>
+    </nav>
+
+    <div class="row g-5">
+      <!-- Form -->
+      <div class="col-lg-7">
+        <div class="booking-panel">
+          <h3 class="fw-bold text-white mb-1">Complete Your Booking</h3>
+          <p class="text-white mb-4">Fill in your rental details below.</p>
+
+          <form method="POST" id="bookingForm" novalidate>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label text-white small">Pickup Location *</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-dark-3 border-secondary"><i class="fas fa-location-dot text-accent"></i></span>
+                  <input type="text" name="pickup_location" class="form-control bg-dark-3 border-secondary text-white" placeholder="City, Airport..." required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label text-white small">Return Location *</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-dark-3 border-secondary"><i class="fas fa-location-arrow text-accent"></i></span>
+                  <input type="text" name="return_location" class="form-control bg-dark-3 border-secondary text-white" placeholder="City, Airport..." required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label text-white small">Pickup Date *</label>
+                <input type="date" name="pickup_date" id="pickupDate" class="form-control bg-dark-3 border-secondary text-white" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label text-white small">Return Date *</label>
+                <input type="date" name="return_date" id="returnDate" class="form-control bg-dark-3 border-secondary text-white" required>
+              </div>
+            </div>
+
+            <!-- Live Summary -->
+            <div id="bookingSummary" class="mt-4 p-4 rounded-3 bg-dark-3 d-none">
+              <h6 class="fw-semibold text-white mb-3">Booking Summary</h6>
+              <div class="d-flex justify-content-between text-white small mb-2">
+                <span>Rental Duration</span><span id="summaryDays" class="text-white">–</span>
+              </div>
+              <div class="d-flex justify-content-between text-white small mb-2">
+                <span>Price Per Day</span><span class="text-white">${{ "%.2f"|format(car.price_per_day) }}</span>
+              </div>
+              <hr class="border-secondary">
+              <div class="d-flex justify-content-between fw-bold">
+                <span class="text-white">Total Estimated</span>
+                <span class="text-accent fs-5" id="summaryTotal">–</span>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <button type="submit" class="btn btn-accent btn-lg w-100 rounded-pill fw-semibold">
+                <i class="fas fa-calendar-check me-2"></i>Confirm Booking
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Car Summary -->
+      <div class="col-lg-5">
+        <div class="car-card sticky-top" style="top:100px">
+          <div class="car-card-img-wrap">
+            <img src="{{ car.car_image }}" alt="{{ car.car_name }}" class="car-card-img">
+            <span class="car-badge bg-success">{{ car.availability_status }}</span>
+          </div>
+          <div class="car-card-body">
+            <h4 class="fw-bold text-white mb-1">{{ car.car_name }}</h4>
+            <p class="text-white small mb-3">{{ car.brand }} &bull; {{ car.model_year or '' }} &bull; {{ car.category_name or '' }}</p>
+            <div class="car-meta d-flex flex-wrap gap-2 mb-3">
+              <span class="car-meta-item"><i class="fas fa-gas-pump"></i>{{ car.fuel_type }}</span>
+              <span class="car-meta-item"><i class="fas fa-gears"></i>{{ car.transmission }}</span>
+              <span class="car-meta-item"><i class="fas fa-user-group"></i>{{ car.seating_capacity }}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-top border-secondary pt-3">
+              <span class="text-white">Rate per day</span>
+              <span class="fw-bold text-accent fs-4">${{ "%.2f"|format(car.price_per_day) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const pricePerDay = Number("{{ car.price_per_day }}");
+const pickupDate  = document.getElementById('pickupDate');
+const returnDate  = document.getElementById('returnDate');
+const today       = new Date().toISOString().split('T')[0];
+pickupDate.min    = today;
+returnDate.min    = today;
+
+function updateSummary() {
+  const p = pickupDate.value, r = returnDate.value;
+  if (!p || !r) return;
+  const days = Math.ceil((new Date(r) - new Date(p)) / 86400000);
+  const summary = document.getElementById('bookingSummary');
+  if (days <= 0) {
+    summary.classList.add('d-none');
+    return;
+  }
+  document.getElementById('summaryDays').textContent = days + ' day' + (days > 1 ? 's' : '');
+  document.getElementById('summaryTotal').textContent = '$' + (days * pricePerDay).toFixed(2);
+  summary.classList.remove('d-none');
+}
+
+pickupDate.addEventListener('change', function() {
+  returnDate.min = this.value;
+  updateSummary();
+});
+returnDate.addEventListener('change', updateSummary);
+
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
+  const p = pickupDate.value, r = returnDate.value;
+  if (!p || !r || new Date(r) <= new Date(p)) {
+    e.preventDefault();
+    alert('Please select valid pickup and return dates. Return date must be after pickup date.');
+  }
+});
+</script>
+{% endblock %}

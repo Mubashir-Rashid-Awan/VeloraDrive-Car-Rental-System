@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}404 – Page Not Found – VeloraDrive{% endblock %}
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center min-vh-100 text-center px-3">
+  
+    <div class="display-1 fw-bold text-accent">404</div>
+    <h2 class="fw-bold text-white mt-3">Oops! Page Not Found</h2>
+    <p class="text-white mt-2 mb-4">The page you're looking for doesn't exist or has been moved.</p>
+    <a href="{{ url_for('main.index') }}" class="btn btn-accent btn-lg rounded-pill px-5">
+        <i class="fas fa-house me-2"></i>Go Home
+    </a>
+
+</div>
+{% endblock %}

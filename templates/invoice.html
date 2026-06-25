@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% block title %}Invoice {{ booking.invoice_number }} – VeloraDrive{% endblock %}
+
+{% block content %}
+<div style="padding-top:80px"></div>
+
+<section class="section-padding">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <!-- Actions -->
+        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+          <a href="{{ url_for('booking.my_bookings') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-2"></i>My Bookings
+          </a>
+          <button onclick="window.print()" class="btn btn-accent btn-sm">
+            <i class="fas fa-print me-2"></i>Print Invoice
+          </button>
+        </div>
+
+        <!-- Invoice Document -->
+        <div class="invoice-doc" id="invoicePrint">
+          <!-- Header -->
+          <div class="d-flex justify-content-between align-items-start mb-5">
+            <div>
+              <h2 class="fw-bold text-white mb-1"><i class="fas fa-car-side me-2 text-accent"></i>Velora<span class="text-accent">Drive</span></h2>
+              <p class="text-white small mb-0">123 Drive Street, Motor City</p>
+              <p class="text-white small mb-0">hello@veloradrive.com | +1 (555) 000-1234</p>
+            </div>
+            <div class="text-end">
+              <div class="invoice-number-badge">INVOICE</div>
+              <div class="text-accent fw-bold fs-5 mt-2">{{ booking.invoice_number or 'N/A' }}</div>
+              <div class="text-white small mt-1">Issued: {{ booking.issued_date.strftime('%B %d, %Y') if booking.issued_date else 'N/A' }}</div>
+            </div>
+          </div>
+
+          <hr class="border-secondary mb-4">
+
+          <!-- Billed To + Status -->
+          <div class="row g-4 mb-5">
+            <div class="col-md-6">
+              <h6 class="text-white small fw-semibold mb-2 text-uppercase">Billed To</h6>
+              <h5 class="fw-bold text-white">{{ booking.full_name }}</h5>
+              <p class="text-white small mb-0">{{ booking.email }}</p>
+              {% if booking.phone %}<p class="text-white small mb-0">{{ booking.phone }}</p>{% endif %}
+            </div>
+            <div class="col-md-6 text-md-end">
+              <h6 class="text-white small fw-semibold mb-2 text-uppercase">Status</h6>
+              <span class="badge {% if booking.payment_status == 'Paid' %}bg-success{% else %}bg-warning text-dark{% endif %} fs-6 px-3 py-2">
+                {{ booking.payment_status or 'Unpaid' }}
+              </span>
+              <div class="mt-2">
+                <span class="badge {% if booking.booking_status == 'Confirmed' %}bg-success{% elif booking.booking_status == 'Cancelled' %}bg-danger{% elif booking.booking_status == 'Completed' %}bg-info{% else %}bg-warning text-dark{% endif %} fs-6 px-3 py-2">
+                  Booking: {{ booking.booking_status }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vehicle Details -->
+          <div class="invoice-table rounded-3 overflow-hidden mb-4">
+            <table class="table table-dark table-borderless mb-0">
+              <thead style="background:rgba(255,255,255,0.05)">
+                <tr>
+                  <th class="text-white small fw-semibold">Description</th>
+                  <th class="text-white small fw-semibold text-center">Days</th>
+                  <th class="text-white small fw-semibold text-end">Rate/Day</th>
+                  <th class="text-white small fw-semibold text-end">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="fw-semibold text-white">{{ booking.car_name }} ({{ booking.brand }})</div>
+                    <div class="text-white small">{{ booking.model_year or '' }}</div>
+                  </td>
+                  <td class="text-center text-white">{{ booking.total_days }}</td>
+                  <td class="text-end text-white">${{ "%.2f"|format(booking.total_amount / booking.total_days if booking.total_days else 0) }}</td>
+                  <td class="text-end fw-bold text-accent">${{ "%.2f"|format(booking.total_amount) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Totals -->
+          <div class="row justify-content-end mb-5">
+            <div class="col-md-5">
+              <div class="p-3 rounded-3 bg-dark-3">
+                <div class="d-flex justify-content-between text-white small mb-2">
+                  <span>Subtotal</span><span class="text-white">${{ "%.2f"|format(booking.total_amount) }}</span>
+                </div>
+                <div class="d-flex justify-content-between text-white small mb-2">
+                  <span>Tax (0%)</span><span class="text-white">$0.00</span>
+                </div>
+                <hr class="border-secondary">
+                <div class="d-flex justify-content-between fw-bold">
+                  <span class="text-white">Total Due</span>
+                  <span class="text-accent fs-5">${{ "%.2f"|format(booking.total_amount) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rental Info -->
+          <div class="row g-3 mb-5">
+            <div class="col-md-3 col-6">
+              <div class="invoice-info-box">
+                <div class="small text-white mb-1">Pickup Location</div>
+                <div class="small text-white fw-semibold">{{ booking.pickup_location }}</div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="invoice-info-box">
+                <div class="small text-white mb-1">Return Location</div>
+                <div class="small text-white fw-semibold">{{ booking.return_location }}</div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="invoice-info-box">
+                <div class="small text-white mb-1">Pickup Date</div>
+                <div class="small text-white fw-semibold">{{ booking.pickup_date.strftime('%b %d, %Y') if booking.pickup_date else '–' }}</div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="invoice-info-box">
+                <div class="small text-white mb-1">Return Date</div>
+                <div class="small text-white fw-semibold">{{ booking.return_date.strftime('%b %d, %Y') if booking.return_date else '–' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Info -->
+          {% if booking.payment_method %}
+          <div class="mb-4 p-3 rounded-3 bg-dark-3 d-flex align-items-center gap-3">
+            <i class="fas fa-credit-card text-accent fs-4"></i>
+            <div>
+              <div class="small text-white">Payment Method</div>
+              <div class="text-white fw-semibold">{{ booking.payment_method }}</div>
+            </div>
+            {% if booking.transaction_date %}
+            <div class="ms-auto text-end">
+              <div class="small text-white">Transaction Date</div>
+              <div class="text-white small">{{ booking.transaction_date.strftime('%b %d, %Y %H:%M') }}</div>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          <!-- Footer -->
+          <hr class="border-secondary">
+          <p class="text-white small text-center mb-0">Thank you for choosing VeloraDrive! &bull; hello@veloradrive.com &bull; +1 (555) 000-1234</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+@media print {
+  .no-print, nav, footer, #scrollTopBtn { display: none !important; }
+  body { background: white !important; color: black !important; }
+  .invoice-doc { background: white !important; color: black !important; }
+  .text-white { color: black !important; }
+  .text-white { color: #555 !important; }
+  .text-accent { color: #333 !important; }
+}
+</style>
+{% endblock %}

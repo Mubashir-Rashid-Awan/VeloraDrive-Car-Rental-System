@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard – VeloraDrive{% endblock %}
+
+{% block content %}
+<div style="padding-top:80px"></div>
+
+<section class="section-padding">
+  <div class="container-fluid px-4">
+    <div class="row g-4">
+
+      <!-- Admin Sidebar -->
+      <div class="col-xl-2 col-lg-3">
+        <div class="dash-sidebar">
+          <div class="text-center mb-4">
+            <i class="fas fa-shield-halved text-accent" style="font-size:40px"></i>
+            <h6 class="fw-bold text-white mt-2 mb-0">{{ session.get('admin_name','Admin') }}</h6>
+            <small class="text-white">{{ session.get('role','Admin') }}</small>
+          </div>
+          <nav class="dash-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="dash-nav-link {% if active=='overview' %}active{% endif %}">
+              <i class="fas fa-gauge"></i>Overview
+            </a>
+            <a href="{{ url_for('admin.manage_cars') }}" class="dash-nav-link {% if active=='cars' %}active{% endif %}">
+              <i class="fas fa-car"></i>Manage Cars
+            </a>
+            <a href="{{ url_for('admin.manage_bookings') }}" class="dash-nav-link {% if active=='bookings' %}active{% endif %}">
+              <i class="fas fa-calendar-check"></i>Bookings
+            </a>
+            <a href="{{ url_for('admin.manage_reviews') }}" class="dash-nav-link {% if active=='reviews' %}active{% endif %}">
+              <i class="fas fa-comments"></i>Reviews
+            </a>
+            <a href="{{ url_for('admin.manage_users') }}" class="dash-nav-link {% if active=='users' %}active{% endif %}">
+              <i class="fas fa-users"></i>Users
+            </a>
+            <hr class="border-secondary">
+            <a href="{{ url_for('main.index') }}" class="dash-nav-link">
+              <i class="fas fa-globe"></i>View Site
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="dash-nav-link text-danger">
+              <i class="fas fa-right-from-bracket"></i>Logout
+            </a>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Main Admin Content -->
+      <div class="col-xl-10 col-lg-9">
+
+        <!-- ============ OVERVIEW ============ -->
+        {% if active == 'overview' %}
+        <h3 class="fw-bold text-white mb-4"><i class="fas fa-gauge text-accent me-2"></i>Dashboard Overview</h3>
+        <div class="row g-4 mb-4">
+          {% for icon, label, val, col in [
+            ('fa-users','Total Users', total_users, 'text-info'),
+            ('fa-car','Total Cars', total_cars, 'text-accent'),
+            ('fa-calendar-check','Total Bookings', total_bookings, 'text-warning'),
+            ('fa-dollar-sign','Total Revenue', '$'~"%.2f"|format(total_revenue), 'text-success')
+          ] %}
+          <div class="col-xl-3 col-md-6">
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon {{ col }}"><i class="fas {{ icon }}"></i></div>
+              <div class="admin-stat-val {{ col }}">{{ val }}</div>
+              <div class="admin-stat-label">{{ label }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <h5 class="fw-semibold text-white mb-3">Recent Bookings</h5>
+        <div class="table-responsive rounded-3 overflow-hidden">
+          <table class="table table-dark table-hover align-middle mb-0">
+            <thead style="background:rgba(255,255,255,0.05)">
+              <tr class="text-white small">
+                <th>ID</th><th>Customer</th><th>Car</th><th>Amount</th><th>Status</th><th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in recent_bookings %}
+              <tr>
+                <td class="text-white">#{{ b.booking_id }}</td>
+                <td class="text-white">{{ b.user_name }}</td>
+                <td class="text-white">{{ b.car_name }}</td>
+                <td class="text-accent">${{ "%.2f"|format(b.total_amount) }}</td>
+                <td>
+                  <span class="badge {% if b.booking_status=='Confirmed' %}bg-success{% elif b.booking_status=='Cancelled' %}bg-danger{% elif b.booking_status=='Completed' %}bg-info{% else %}bg-warning text-dark{% endif %}">
+                    {{ b.booking_status }}
+                  </span>
+                </td>
+                <td class="text-white small">{{ b.created_at.strftime('%b %d, %Y') if b.created_at else '' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+
+        <!-- ============ CARS ============ -->
+        {% elif active == 'cars' %}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="fw-bold text-white mb-0"><i class="fas fa-car text-accent me-2"></i>Manage Cars</h3>
+          <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#addCarModal">
+            <i class="fas fa-plus me-2"></i>Add Car
+          </button>
+        </div>
+
+        <div class="table-responsive rounded-3 overflow-hidden">
+          <table class="table table-dark table-hover align-middle mb-0">
+            <thead style="background:rgba(255,255,255,0.05)">
+              <tr class="text-white small">
+                <th>Car</th><th>Category</th><th>Price/Day</th><th>Fuel</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in cars %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <img src="{{ c.car_image }}" alt="" style="width:56px;height:40px;object-fit:cover;border-radius:6px">
+                    <div>
+                      <div class="fw-semibold text-white small">{{ c.car_name }}</div>
+                      <div class="text-white" style="font-size:11px">{{ c.brand }} {{ c.model_year or '' }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-white small">{{ c.category_name or '–' }}</td>
+                <td class="text-accent fw-semibold">${{ "%.0f"|format(c.price_per_day) }}</td>
+                <td class="text-white small">{{ c.fuel_type }}</td>
+                <td>
+                  <span class="badge {% if c.availability_status=='Available' %}bg-success{% elif c.availability_status=='Rented' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                    {{ c.availability_status }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-outline-accent btn-sm me-1"
+                    data-bs-toggle="modal" data-bs-target="#editCarModal"
+                    data-car="{{ c | tojson | forceescape }}"
+                    onclick="fillEditModal(this)">
+                    <i class="fas fa-pen"></i>
+                  </button>
+                  <form method="POST" action="{{ url_for('admin.delete_car', car_id=c.car_id) }}" class="d-inline"
+                        onsubmit="return confirm('Delete {{ c.car_name }}?')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add Car Modal -->
+        <div class="modal fade" id="addCarModal" tabindex="-1">
+          <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-dark-2 border-secondary">
+              <div class="modal-header border-secondary">
+                <h5 class="modal-title text-white">Add New Car</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <form method="POST" action="{{ url_for('admin.add_car') }}">
+                <div class="modal-body">
+                  {% include '_car_form.html' %}
+                </div>
+                <div class="modal-footer border-secondary">
+                  <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn btn-accent">Add Car</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Car Modal -->
+        <div class="modal fade" id="editCarModal" tabindex="-1">
+          <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-dark-2 border-secondary">
+              <div class="modal-header border-secondary">
+                <h5 class="modal-title text-white">Edit Car</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <form method="POST" id="editCarForm" action="">
+                <div class="modal-body">
+                  {% include '_car_form.html' with context %}
+                </div>
+                <div class="modal-footer border-secondary">
+                  <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn btn-accent">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- ============ BOOKINGS ============ -->
+        {% elif active == 'bookings' %}
+        <h3 class="fw-bold text-white mb-4"><i class="fas fa-calendar-check text-accent me-2"></i>All Bookings</h3>
+        <div class="table-responsive rounded-3 overflow-hidden">
+          <table class="table table-dark table-hover align-middle mb-0">
+            <thead style="background:rgba(255,255,255,0.05)">
+              <tr class="text-white small">
+                <th>ID</th><th>Customer</th><th>Car</th><th>Dates</th><th>Amount</th><th>Payment</th><th>Status</th><th>Change Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in bookings %}
+              <tr>
+                <td class="text-white">#{{ b.booking_id }}</td>
+                <td class="text-white small">{{ b.user_name }}</td>
+                <td class="text-white small">{{ b.car_name }}</td>
+                <td class="text-white" style="font-size:11px">
+                  {{ b.pickup_date.strftime('%b %d') if b.pickup_date else '' }} →
+                  {{ b.return_date.strftime('%b %d') if b.return_date else '' }}
+                </td>
+                <td class="text-accent">${{ "%.2f"|format(b.total_amount) }}</td>
+                <td>
+                  <span class="badge {% if b.payment_status == 'Paid' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                    {{ b.payment_status or 'Unpaid' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge {% if b.booking_status=='Confirmed' %}bg-success{% elif b.booking_status=='Cancelled' %}bg-danger{% elif b.booking_status=='Completed' %}bg-info{% else %}bg-warning text-dark{% endif %}">
+                    {{ b.booking_status }}
+                  </span>
+                </td>
+                <td>
+                  <form method="POST" action="{{ url_for('admin.update_booking_status', booking_id=b.booking_id) }}" class="d-flex gap-1">
+                    <select name="status" class="form-select form-select-sm bg-dark-3 border-secondary text-white" style="min-width:120px">
+                      {% for s in ['Pending','Confirmed','Cancelled','Completed'] %}
+                      <option value="{{ s }}" {% if b.booking_status == s %}selected{% endif %}>{{ s }}</option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-accent btn-sm">Update</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+
+        <!-- ============ REVIEWS ============ -->
+        {% elif active == 'reviews' %}
+        <h3 class="fw-bold text-white mb-4"><i class="fas fa-comments text-accent me-2"></i>Manage Reviews</h3>
+        <div class="table-responsive rounded-3 overflow-hidden">
+          <table class="table table-dark table-hover align-middle mb-0">
+            <thead style="background:rgba(255,255,255,0.05)">
+              <tr class="text-white small">
+                <th>User</th><th>Car</th><th>Rating</th><th>Comment</th><th>Date</th><th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in reviews %}
+              <tr>
+                <td class="text-white small">{{ r.full_name }}</td>
+                <td class="text-white small">{{ r.car_name }}</td>
+                <td>
+                  <div class="stars">
+                    {% for i in range(1,6) %}
+                      <i class="fas fa-star {% if i<=r.rating %}text-warning{% else %}text-white{% endif %} small"></i>
+                    {% endfor %}
+                  </div>
+                </td>
+                <td class="text-white small" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.comment or '–' }}</td>
+                <td class="text-white small">{{ r.created_at.strftime('%b %d, %Y') if r.created_at else '' }}</td>
+                <td>
+                  <form method="POST" action="{{ url_for('admin.delete_review', review_id=r.review_id) }}"
+                        onsubmit="return confirm('Delete this review?')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+
+        <!-- ============ USERS ============ -->
+        {% elif active == 'users' %}
+        <h3 class="fw-bold text-white mb-4"><i class="fas fa-users text-accent me-2"></i>All Users</h3>
+        <div class="table-responsive rounded-3 overflow-hidden">
+          <table class="table table-dark table-hover align-middle mb-0">
+            <thead style="background:rgba(255,255,255,0.05)">
+              <tr class="text-white small">
+                <th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Bookings</th><th>Joined</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td class="text-white">#{{ u.user_id }}</td>
+                <td class="text-white fw-semibold">{{ u.full_name }}</td>
+                <td class="text-white small">{{ u.email }}</td>
+                <td class="text-white small">{{ u.phone or '–' }}</td>
+                <td>
+                  <span class="badge bg-dark-3 text-accent border border-secondary">{{ u.booking_count }}</span>
+                </td>
+                <td class="text-white small">{{ u.created_at.strftime('%b %d, %Y') if u.created_at else '' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% if active == 'cars' %}
+
+
+<script>
+function fillEditModal(btn) {
+  const car = JSON.parse(btn.dataset.car);
+  const form = document.getElementById('editCarForm');
+  form.action = `/admin/cars/edit/${car.car_id}`;
+  const fields = ['car_name','brand','model_year','price_per_day','fuel_type',
+                  'transmission','seating_capacity','car_image','availability_status','description'];
+  fields.forEach(f => {
+    const el = form.querySelector(`[name="${f}"]`);
+    if (el) el.value = car[f] || '';
+  });
+  // Category select
+  const catSel = form.querySelector('[name="category_id"]');
+  if (catSel && car.category_id) catSel.value = car.category_id;
+}
+</script>
+
+{% endif %}
+{% endblock %}
