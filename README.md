@@ -46,7 +46,7 @@ VeloraDrive is a full-stack web-based car rental application built using Flask. 
 
 ### 🔹 1. Clone the Repository
 
-git clone https://github.com/your-username/veloradrive.git
+git clone https://github.com/Mubashir-Rashid-Awan/veloradrive.git
 cd veloradrive
 
 
