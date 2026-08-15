@@ -85,5 +85,23 @@ Mubashir Rashid
 
 Car rental web application with user booking and admin management.
 
+---
+
+### User Interface
+
+
+<img width="1763" height="6708" alt="Screenshot_15-8-2026_12300_192 168 100 17" src="https://github.com/user-attachments/assets/c2187b48-0b22-47d2-879b-d83a3e8aa065" />
+
+
+<img width="1763" height="3067" alt="Screenshot_15-8-2026_123044_192 168 100 17" src="https://github.com/user-attachments/assets/b2a0a874-69a2-4cbb-931e-d795b137462c" />
+
+
+
+<img width="1763" height="2343" alt="Screenshot_15-8-2026_124236_192 168 100 17" src="https://github.com/user-attachments/assets/9b7851b4-20c6-4c84-8916-044040cd71be" />
+
+
+<img width="1763" height="1514" alt="Screenshot_15-8-2026_123119_192 168 100 17" src="https://github.com/user-attachments/assets/9140a111-a170-4f84-8638-427887702a97" />
+
+
 
 
