@@ -1,10 +1,10 @@
-# 🚗 VeloraDrive – Car Rental System
+# VeloraDrive – Car Rental System
 
 VeloraDrive is a full-stack web-based car rental application built using Flask. It allows users to browse available cars, view details, and make bookings online. The system includes secure authentication, a user dashboard, and an admin panel for managing vehicles, bookings, and users.
 
 ---
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 ### 🔹 Backend
 - Python
@@ -27,7 +27,7 @@ VeloraDrive is a full-stack web-based car rental application built using Flask. 
 
 ---
 
-## ✨ Features
+## Features
 
 - ✅ User Signup & Login (Secure Authentication)
 - ✅ Browse and Search Cars
@@ -42,7 +42,7 @@ VeloraDrive is a full-stack web-based car rental application built using Flask. 
 
 ---
 
-## ⚙️ Project Setup
+## Project Setup
 
 ### 🔹 1. Clone the Repository
 
@@ -77,11 +77,11 @@ http://127.0.0.1:5000
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 Mubashir Rashid  
 
-## 💡 Tagline
+## Tagline
 
 Car rental web application with user booking and admin management.
 
@@ -89,16 +89,19 @@ Car rental web application with user booking and admin management.
 
 ### User Interface
 
+## Home Page
 
 <img width="1763" height="6708" alt="Screenshot_15-8-2026_12300_192 168 100 17" src="https://github.com/user-attachments/assets/c2187b48-0b22-47d2-879b-d83a3e8aa065" />
 
+## Cars Booking Page
 
 <img width="1763" height="3067" alt="Screenshot_15-8-2026_123044_192 168 100 17" src="https://github.com/user-attachments/assets/b2a0a874-69a2-4cbb-931e-d795b137462c" />
 
-
+## About Page
 
 <img width="1763" height="2343" alt="Screenshot_15-8-2026_124236_192 168 100 17" src="https://github.com/user-attachments/assets/9b7851b4-20c6-4c84-8916-044040cd71be" />
 
+## Contact Page
 
 <img width="1763" height="1514" alt="Screenshot_15-8-2026_123119_192 168 100 17" src="https://github.com/user-attachments/assets/9140a111-a170-4f84-8638-427887702a97" />
 
